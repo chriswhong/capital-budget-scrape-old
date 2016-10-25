@@ -10,19 +10,16 @@ var config = {
   inputPath: process.argv[2],
   outputPath: process.argv[3],
   headers: [
+    'boro',
     'budgetline',
-    'fmsnumber',
-    'title',
-    'totalestimatedcost',
-    'totalappropriation31may16',
-    'appropriationavailable31may16',
-    'adoptedfy17capitalbudget',
-    'fy18',
-    'fy19',
-    'fy20',
-    'requiredtocomplete',
-    'mando',
-    'estimateddateofcompletion'
+    'type',
+    'description',
+    'fy17cn',
+    'fy17cx',
+    'fy17f',
+    'fy17s',
+    'fy17p',
+    'fy17total'
   ]  
 }
 
@@ -49,65 +46,74 @@ extract(config.inputPath, {}, function (err, pages) {
     adoptedBudget: []
   }
 
-  for (var i=12; i<14; i=i+2) {
+  var boroLines = [
+    'C I T Y W I D E',
+    'B R O N X',
+    'B R O O K L Y N',
+    'M A N H A T T A N',
+    'Q U E E N S',
+    'R I C H M O N D'
+  ]
+
+  var boroText = [
+    'citywide',
+    'bronx',
+    'brooklyn',
+    'manhattan',
+    'queens',
+    'richmond'
+  ]
+
+  var boro,
+  rowData = null,
+  budgetLine
+
+  for (var i=422; i<542; i++) {
 
     var firstPageText = pages[i-1];
-    var secondPageText = pages[i];
-
-    //parse first page
-    var firstPageBudgetLines=firstPageText.split('------------------------------------------------------------------------------------------------------------------------------------')
-    var secondPageBudgetLines=secondPageText.split('------------------------------------------------------------------------------------------------------------------------------------')
-    
-
-
-    // //get rid of first 10 lines and last 6 lines
-    firstPageBudgetLines.splice(0,3)
-    firstPageBudgetLines.splice(firstPageBudgetLines.length-1,1)
-
-    secondPageBudgetLines.splice(0,3)
-    secondPageBudgetLines.splice(secondPageBudgetLines.length-1,1)
-
-
-    firstPageBudgetLines.map(function(budgetLine, i) {
-      var textLines = budgetLine.split('\n')
-      textLines.splice(0,1)
-
-      var lineDescription = '';
-
-      textLines.map(function(line, j) {
-        lineDescription += line.substring(11,65).trim() + ' '
-      })
-
-      var data = {
-        budgetLine: textLines[0].substring(0,10).trim(),
-        fmsNumber: textLines[1].substring(0,10).trim(),
-        description: lineDescription.trim()
+    var lines = firstPageText.split('\n')
+    console.log(lines)
+    lines.map(function(line) {
+      if(boroLines.indexOf(line) > -1) {
+        boro=boroText[boroLines.indexOf(line)]
       }
 
+      if(line.match('------------------------------------------------------------------------------------------------------------------------------------')) {
+        console.log(rowData)
+        if(rowData) writeRow(rowData)
+        rowData = null
+      }
 
-      var secondPageTextLines = secondPageBudgetLines[i].split('\n')
-      secondPageTextLines.splice(0,1)
-      
-      secondPageTextLines.map(function(line) {
-        var values = line.split(/\s+/)
+      //check for budget line code at the beginning of the line
+      var newBudgetLine = line.match(/^[A-Z]{1,2}-\S*\s{2}/g)
+      if(newBudgetLine) {
+        rowData = {
+          boro: boro,
+          budgetLine: newBudgetLine[0].trim(),
+          type: newBudgetLine[0].trim().split('-')[0],
+          description: ''
+        }
+      }  
+
+
+
+      if(rowData) {
+        //grab the description
+        rowData.description += line.substring(11,54).trim() + ' '
+
+        //regex to find amounts
+
+        var matchAmount = line.substring(69, 133).match(/\d{1,3}(,\d{3})*(\.\d+)?\s*\(([A-Z]*)\)/)
         
-        console.log(values.length)
-        //first line with full data
-        if(values.length==8) {
-          parseAmounts(values, 1, data)
-          data.mo = values[6],
-          data.edc = values[7]
-        } 
 
-        
-      })
-      
+        if(matchAmount) {
+          var fy17 = parseValue('fy17', matchAmount[0].trim())
+          rowData[fy17.key] = fy17.amount
+        }
+       
+      }
 
-      console.log(data)
     })
-
-   
-
   }
 })
 
@@ -123,42 +129,44 @@ function parseAmounts(source, index, data) {
 
 
 function parseValue(key, value) {
+  console.log(value)
   var match = value.match(/(.*)\((.*)\)/)
-
-  return {
-    key: key + match[2],
-    amount: parseFloat(match[1].replace(/,/g, ''))
+  if(match) {
+    return {
+      key: key + match[2],
+      amount: parseFloat(match[1].replace(/,/g, '') * 1000)
+    }    
   }
+
+
 }
 
+function writeRow(rowData) {
+  
+  var dollarFields = ['fy17CN', 'fy17CX', 'fy17F', 'fy17S', 'fy17P']
 
+  var total = 0
+  dollarFields.map(function(field) {
+    if(typeof(rowData[field]) == 'number') total += rowData[field]
+  })
+  
 
+  var rowDataArray = [
+    rowData.boro,
+    rowData.budgetLine,
+    rowData.type,
+    '\"' + rowData.description.trim() + '\"',
+    rowData.fy17CN,
+    rowData.fy17CX,
+    rowData.fy17F,
+    rowData.fy17S,
+    rowData.fy17P,
+    total
+  ]
+  
+  outputFile.write(rowDataArray.join(',') + '\n')
+}
 
-// //scrape the table
-// function scrape(tableText) {
-
-//   //split on new lines
-//   var rows = tableText.split('\n');
-
-//   //for each row, process and write to output
-//   rows.forEach( function(row) {
-//     console.log(row);
-//     //check if row has no length or starts with a space
-//     if (row.length > 0 && row.substring(0,1) != ' ') { 
-
-//       //split on more than one white space
-//       var split = row.split(/\s{2,}/);
-
-//       //prepend and append double quotes for each column so that they are valid CSV strings
-//       split.forEach( function(item, j ) {
-//         split[j] = '"' + item + '"';
-//       });
-
-//       //join together with commas, add a new line character
-//       var csvLine = split.join(',') + '\n'
-
-//       //console.log(csvLine);    
-//       output.write(csvLine); //write the row
-//     }
-//   })
-// }
+//Budget Line E-2364 is not formatted the same as the others!!!
+//The regex for finding comma-delimited numbers only grabs its last 3 digits,  
+//this throws the number off by 2 billion dollars, as it is the largest capital budget line!  
