@@ -2,6 +2,9 @@
 
 A node.js scraper for the NYC capital budget
 
+##Get the Data
+Download the output csv [here](https://github.com/chriswhong/capital-budget-scrape/blob/master/data/fy17capitalbudget.csv)
+
 ##What does it do?
 
 It pulls a bare minimum of information from the [FY17 capital budget pdf](http://www1.nyc.gov/assets/omb/downloads/pdf/cb6-16.pdf).
