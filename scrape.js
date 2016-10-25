@@ -6,9 +6,12 @@
 var extract = require('pdf-text-extract'),
 fs = require('fs');
 
+var inputFilename = process.argv[2] || 'pdf/cb6-16.pdf';
+var outputFilename = process.argv[3] || 'data/fy17capitalbudget.csv';
+
 var config = {
-  inputPath: process.argv[2],
-  outputPath: process.argv[3],
+  inputPath: inputFilename,
+  outputPath: outputFilename,
   headers: [
     'boro',
     'budgetline',
@@ -132,12 +135,12 @@ function writeRow(rowData) {
     if(typeof(rowData[field]) == 'number') total += rowData[field]
   })
   
-
+  var description = '\"' + rowData.description.trim().replace(/"/g, '""') + '\"'
   var rowDataArray = [
     rowData.boro,
     rowData.budgetLine,
     rowData.type,
-    '\"' + rowData.description.trim() + '\"',
+    description,
     rowData.fy17CN,
     rowData.fy17CX,
     rowData.fy17F,
