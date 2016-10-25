@@ -28,3 +28,11 @@ Total - Sum of all of these
 ##Total 
 The sum of the `fy17total` column should be `14007015000` ($14B)
 You will find a similar number in the totals on page 8 of the PDF.  It is slightly different because the budget lines listed in the gepgraphic analysis are in thousands of dollars, while the budget lines in the earlier sections are accurate to one dollar.  
+
+##Run the scraper locally yourself
+
+```
+$ npm install
+$ node scrape.js
+
+```
