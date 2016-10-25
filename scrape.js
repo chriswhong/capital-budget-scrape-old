@@ -135,12 +135,12 @@ function writeRow(rowData) {
     if(typeof(rowData[field]) == 'number') total += rowData[field]
   })
   
-
+  var description = '\"' + rowData.description.trim().replace(/"/g, '\\\"') + '\"'
   var rowDataArray = [
     rowData.boro,
     rowData.budgetLine,
     rowData.type,
-    '\"' + rowData.description.trim() + '\"',
+    description,
     rowData.fy17CN,
     rowData.fy17CX,
     rowData.fy17F,
