@@ -55,21 +55,20 @@ extract(config.inputPath, {}, function (err, pages) {
     var secondPageText = pages[i];
 
     //parse first page
-    var firstPageLines=firstPageText.split('------------------------------------------------------------------------------------------------------------------------------------')
-    var secondPageLines=secondPageText.split('------------------------------------------------------------------------------------------------------------------------------------')
+    var firstPageBudgetLines=firstPageText.split('------------------------------------------------------------------------------------------------------------------------------------')
+    var secondPageBudgetLines=secondPageText.split('------------------------------------------------------------------------------------------------------------------------------------')
     
 
 
     // //get rid of first 10 lines and last 6 lines
-    firstPageLines.splice(0,3)
-    firstPageLines.splice(firstPageLines.length-1,1)
+    firstPageBudgetLines.splice(0,3)
+    firstPageBudgetLines.splice(firstPageBudgetLines.length-1,1)
 
-    secondPageLines.splice(0,3)
-    secondPageLines.splice(secondPageLines.length-1,1)
-    console.log(firstPageLines.length, secondPageLines.length)
+    secondPageBudgetLines.splice(0,3)
+    secondPageBudgetLines.splice(secondPageBudgetLines.length-1,1)
 
 
-    firstPageLines.map(function(budgetLine) {
+    firstPageBudgetLines.map(function(budgetLine, i) {
       var textLines = budgetLine.split('\n')
       textLines.splice(0,1)
 
@@ -85,56 +84,54 @@ extract(config.inputPath, {}, function (err, pages) {
         description: lineDescription.trim()
       }
 
+
+      var secondPageTextLines = secondPageBudgetLines[i].split('\n')
+      secondPageTextLines.splice(0,1)
+      
+      secondPageTextLines.map(function(line) {
+        var values = line.split(/\s+/)
+        
+        console.log(values.length)
+        //first line with full data
+        if(values.length==8) {
+          parseAmounts(values, 1, data)
+          data.mo = values[6],
+          data.edc = values[7]
+        } 
+
+        
+      })
+      
+
       console.log(data)
     })
 
-    // var isSecondLine = false
-
-    // console.log(firstPageLines)
-    // console.log(secondPageLines)
-
-    // firstPageLines.map(function(line, j) {
-    //   //console.log(line)
-
-    //   if(line.substring(0,3) != '---') {  
-    //     var newBudgetLine = line.match(/^[A-Z]{1,2}-\S*\s{2}/g)
-      
-    //     if(isSecondLine) {
-    //       currentBudgetLine.fmsNumber = line.substring(0,10).trim()
-    //       isSecondLine = false
-    //     }
-
-    //     if (newBudgetLine != null) {
-    //       isSecondLine = true
-
-    //       currentBudgetLine.budgetLine = newBudgetLine[0].trim() 
-    //     }
-
-    //     console.log(secondPageLines[j])
-
-    //     //parse adoptedBudget from associated 2nd page line
-    //     var adoptedBudget = secondPageLines[j].substring(10,20).trim()
-    //     currentBudgetLine.adoptedBudget.push(adoptedBudget)
-        
-  
-    //     var lineDescription = line.substring(11,65)
-    //     currentBudgetLine.description += lineDescription.trim() + ' '
-    //   } else {
-
-    //     budgetLines.push(currentBudgetLine)
-
-    //     currentBudgetLine = {
-    //       description: '',
-    //       adoptedBudget: []
-    //     }
-    //   }
-    // })
-
-
-    // console.log(budgetLines)
+   
 
   }
 })
+
+
+//grabs fy17, 18, 19, 20 from source array starting at position i
+function parseAmounts(source, index, data) {
+  var yearKeys = ['fy17', 'fy18', 'fy19', 'fy20', 'rc']
+  for(var i=0; i<5; i++) {
+    var value = parseValue(yearKeys[i], source[i+index])
+    data[value.key] = value.amount
+  }
+}
+
+
+function parseValue(key, value) {
+  var match = value.match(/(.*)\((.*)\)/)
+
+  return {
+    key: key + match[2],
+    amount: parseFloat(match[1].replace(/,/g, ''))
+  }
+}
+
+
 
 
 // //scrape the table
