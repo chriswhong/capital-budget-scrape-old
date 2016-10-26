@@ -153,4 +153,8 @@ function writeRow(rowData) {
 
 //Budget Line E-2364 is not formatted the same as the others!!!
 //The regex for finding comma-delimited numbers only grabs its last 3 digits,  
-//this throws the number off by 2 billion dollars, as it is the largest capital budget line!  
+//this throws the number off by 2 billion dollars, as it is the largest capital budget line! 
+
+//There are also duplicate budget lines in the output, as projects like the Manhattan Bridge show up listed under Manhattan and Brooklyn with the same dollar amounts.
+//Be sure to de-dupe
+//The sum for FY17 using the gegographic analysis data should be 14007015000 
