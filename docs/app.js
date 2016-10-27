@@ -3,6 +3,22 @@ var URL_CSV = 'https://raw.githubusercontent.com/loisaidasam/capital-budget-scra
 
 
 /**
+  * Choose non-empty row
+  */
+function chooseRow(rows) {
+    while (true) {
+        var index = Math.floor(Math.random() * rows.length);
+        // console.log("Using index " + index);
+        var row = rows[index];
+        var cost = parseInt(row['fy17total']);
+        if (cost) {
+            return row;
+        }
+    }
+}
+
+
+/**
  * via http://stackoverflow.com/a/14428340/1406873
  */
 function formatCost(cost) {
@@ -17,9 +33,7 @@ function processData(data) {
     // boro,budgetline,type,description,fy17cn,fy17cx,fy17f,fy17s,fy17p,fy17total
     var rows = $.csv.toObjects(data);
     // console.log("CSV had " + rows.length + " rows");
-    var index = Math.floor(Math.random() * rows.length);
-    // console.log("Using index " + index);
-    var row = rows[index];
+    var row = chooseRow(rows);
     // console.log(row);
     $('#item').text(row['description']);
     var cost = "$" + formatCost(row['fy17total']);
