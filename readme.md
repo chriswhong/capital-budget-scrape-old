@@ -1,11 +1,11 @@
-#captial-budget-scrape
+# captial-budget-scrape
 
 A node.js scraper for the NYC capital budget
 
-##Get the Data
+## Get the Data
 Download the output csv [here](https://github.com/chriswhong/capital-budget-scrape/blob/master/data/fy17capitalbudget.csv)
 
-##What does it do?
+## What does it do?
 
 It pulls a bare minimum of information from the [FY17 capital budget pdf](http://www1.nyc.gov/assets/omb/downloads/pdf/cb6-16.pdf).
 
@@ -25,6 +25,6 @@ S - State
 P - Private
 Total - Sum of all of these
 
-##Total 
+## Total 
 The sum of the `fy17total` column should be `14007015000` ($14B)
 You will find a similar number in the totals on page 8 of the PDF.  It is slightly different because the budget lines listed in the gepgraphic analysis are in thousands of dollars, while the budget lines in the earlier sections are accurate to one dollar.  
